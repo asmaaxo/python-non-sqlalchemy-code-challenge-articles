@@ -1,5 +1,5 @@
 class Article:
-    # Empty array stores all articles in a class variable
+    # Track all articles in a class variable
     all = []
 
     def __init__(self, author, magazine, title):
@@ -11,9 +11,9 @@ class Article:
         self.magazine = magazine
         self.title = title
 
-        Article.all.append(self)
+        Article.all.append(self) #It holds all created articles
 
-    @property #Decorator- A function that modifies 
+    @property
     def title(self):
         return self._title
 
@@ -36,9 +36,11 @@ class Article:
 
     @author.setter
     def author(self, value):
+        # Must be an Author
         if isinstance(value, Author):
             self._author = value
         else:
+            # Invalid author, set a default only if none set
             if self._author is None:
                 self._author = Author("Default Author")
 
@@ -48,9 +50,11 @@ class Article:
 
     @magazine.setter
     def magazine(self, value):
+        # Must be a Magazine
         if isinstance(value, Magazine):
             self._magazine = value
         else:
+            # Invalid magazine, set a default only if none set
             if self._magazine is None:
                 self._magazine = Magazine("DefaultMag", "DefaultCat")
 
@@ -66,6 +70,7 @@ class Author:
 
     @name.setter
     def name(self, value):
+        # Name: str, >0 chars, cannot change after set
         if self._name is not None:
             return
         if isinstance(value, str) and len(value.strip()) > 0:
@@ -87,6 +92,7 @@ class Author:
         return new_article
 
     def topic_areas(self):
+        # If no topic areas, return None instead of empty list
         mags = {article.magazine for article in Article.all if article.author == self}
         cats = {m.category for m in mags}
         cats_list = list(cats)
@@ -108,11 +114,14 @@ class Magazine:
 
     @name.setter
     def name(self, value):
+        # Name: str, length 2-16, can change if valid
         if isinstance(value, str) and 2 <= len(value) <= 16:
             self._name = value
         else:
+            # Invalid name assignment
             if self._name is None:
                 self._name = "DefaultName"
+            # If not None, ignore invalid changes
 
     @property
     def category(self):
@@ -120,11 +129,14 @@ class Magazine:
 
     @category.setter
     def category(self, value):
+        # Category: non-empty str, can change if valid
         if isinstance(value, str) and len(value.strip()) > 0:
             self._category = value
         else:
+            # Invalid category assignment
             if self._category is None:
                 self._category = "DefaultCat"
+            # If not None, ignore invalid changes
 
     def articles(self):
         arts = [article for article in Article.all if article.magazine == self]
@@ -136,6 +148,7 @@ class Magazine:
 
     def article_titles(self):
         titles = [article.title for article in Article.all if article.magazine == self]
+        # Return None if no titles
         if len(titles) == 0:
             return None
         return titles
@@ -145,7 +158,32 @@ class Magazine:
         author_count = {}
         for article in articles_for_mag:
             author_count[article.author] = author_count.get(article.author, 0) + 1
+        # More than 2 articles means count > 2
         result = [author for author, count in author_count.items() if count > 2]
+        # If no contributing authors with more than 2 articles, return None
         if len(result) == 0:
             return None
         return result
+
+
+# Create authors
+author1 = Author("Bob Marley")
+author2 = Author("Thomas Shelby")
+
+# Create magazines
+mag1 = Magazine("Tech Weekly", "Technology")
+mag2 = Magazine("Health Today", "Health")
+
+# Create articles
+article1 = author1.add_article(mag1, "The Rise of Cats")
+article2 = author1.add_article(mag2, "Healthy Living Tips")
+article3 = author2.add_article(mag1, "Quantum Computing")
+article4 = author2.add_article(mag1, "The Future of VR")
+
+# Displaying the some information
+print(f"Author1 articles: {[article.title for article in author1.articles()]}")
+print(f"Mag1 contributors: {[author.name for author in mag1.contributors()]}")
+print(f"Mag1 article titles: {mag1.article_titles()}")
+print(f"Author1 magazines: {[mag.name for mag in author1.magazines()]}")
+print(f"Author2 topic areas: {author2.topic_areas()}")
+print(f"Mag1 contributing authors (more than 2 articles): {mag1.contributing_authors()}")
